@@ -1,31 +1,36 @@
-name: Maven Build
+name: Node.js CI
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+      
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # Step 1: Checkout the repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Java and Maven
-        uses: actions/setup-java@v3
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'maven'
+          node-version: '16' # Specify your Node.js version
 
-      - name: Build Maven project
-        run: mvn -f path/to/pom.xml clean package
-      - name: Get Maven Project Version
-        run: |
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "Project version: $VERSION" 
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Get the artifact version from package.json
+      - name: Get artifact version
+        id: get_version
+        run: echo "ARTIFACT_VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
+
+      # Step 5: Use the artifact version
+      - name: Display artifact version
+        run: echo "The artifact version is ${{ env.ARTIFACT_VERSION }}"
+ 
